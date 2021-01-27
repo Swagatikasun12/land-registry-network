@@ -1,0 +1,179 @@
+version: "2"
+
+volumes:
+    orderer.lran.com:
+    peer0.citizen.lran.com:
+    peer0.lawyer.lran.com:
+    peer0.registryoffice.lran.com:
+    peer0.blro.lran.com:
+    caCitizen:
+    caLawyer:
+    caRegistryOffice:
+    caBLRO:
+
+networks:
+    lrannet:
+
+services:
+    orderer.lran.com:
+        extends:
+            file: base/docker-compose-base.yaml
+            service: orderer.lran.com
+        container_name: orderer.lran.com
+        networks:
+            - lrannet
+
+    peer0.citizen.lran.com:
+        container_name: peer0.citizen.lran.com
+        extends:
+            file: base/docker-compose-base.yaml
+            service: peer0.citizen.lran.com
+        networks:
+            - lrannet
+        depends_on:
+            - couchdb.peer0.citizen.lran.com
+
+    peer0.lawyer.lran.com:
+        container_name: peer0.lawyer.lran.com
+        extends:
+            file: base/docker-compose-base.yaml
+            service: peer0.lawyer.lran.com
+        networks:
+            - lrannet
+        depends_on:
+            - couchdb.peer0.lawyer.lran.com
+
+    peer0.registryoffice.lran.com:
+        container_name: peer0.registryoffice.lran.com
+        extends:
+            file: base/docker-compose-base.yaml
+            service: peer0.registryoffice.lran.com
+        networks:
+            - lrannet
+        depends_on:
+            - couchdb.peer0.registryoffice.lran.com
+
+    peer0.blro.lran.com:
+        container_name: peer0.blro.lran.com
+        extends:
+            file: base/docker-compose-base.yaml
+            service: peer0.blro.lran.com
+        networks:
+            - lrannet
+        depends_on:
+            - couchdb.peer0.blro.lran.com
+
+    caCitizen:
+        container_name: caCitizen
+        extends:
+            file: base/docker-compose-base.yaml
+            service: caCitizen
+        networks:
+            - lrannet
+
+    caLawyer:
+        container_name: caLawyer
+        extends:
+            file: base/docker-compose-base.yaml
+            service: caLawyer
+        networks:
+            - lrannet
+
+    caRegistryOffice:
+        container_name: caRegistryOffice
+        extends:
+            file: base/docker-compose-base.yaml
+            service: caRegistryOffice
+        networks:
+            - lrannet
+
+    caBLRO:
+        container_name: caBLRO
+        extends:
+            file: base/docker-compose-base.yaml
+            service: caBLRO
+        networks:
+            - lrannet
+
+    couchdb.peer0.citizen.lran.com:
+        container_name: couchdb.peer0.citizen.lran.com
+        image: hyperledger/fabric-couchdb
+        environment:
+            - COUCHDB_USER=admin
+            - COUCHDB_PASSWORD=adminpw
+        ports:
+            - "5984:5984"
+        networks:
+            - lrannet
+
+    couchdb.peer0.lawyer.lran.com:
+        container_name: couchdb.peer0.lawyer.lran.com
+        image: hyperledger/fabric-couchdb
+        environment:
+            - COUCHDB_USER=admin
+            - COUCHDB_PASSWORD=adminpw
+        ports:
+            - "6984:5984"
+        networks:
+            - lrannet
+
+    couchdb.peer0.registryoffice.lran.com:
+        container_name: couchdb.peer0.registryoffice.lran.com
+        image: hyperledger/fabric-couchdb
+        environment:
+            - COUCHDB_USER=admin
+            - COUCHDB_PASSWORD=adminpw
+        ports:
+            - "7984:5984"
+        networks:
+            - lrannet
+
+    couchdb.peer0.blro.lran.com:
+        container_name: couchdb.peer0.blro.lran.com
+        image: hyperledger/fabric-couchdb
+        environment:
+            - COUCHDB_USER=admin
+            - COUCHDB_PASSWORD=adminpw
+        ports:
+            - "8984:5984"
+        networks:
+            - lrannet
+
+    cli:
+        container_name: cli
+        image: hyperledger/fabric-tools:$IMAGE_TAG
+        tty: true
+        stdin_open: true
+        environment:
+            - GOPATH=/opt/gopath
+            - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+            #- FABRIC_LOGGING_SPEC=DEBUG
+            - FABRIC_LOGGING_SPEC=INFO
+            - CORE_PEER_ID=cli
+            - CORE_PEER_ADDRESS=peer0.citizen.lran.com:7051
+            - CORE_PEER_LOCALMSPID=CitizenMSP
+            - CORE_PEER_TLS_ENABLED=true
+            - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/citizen.lran.com/peers/peer0.citizen.lran.com/tls/server.crt
+            - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/citizen.lran.com/peers/peer0.citizen.lran.com/tls/server.key
+            - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/citizen.lran.com/peers/peer0.citizen.lran.com/tls/ca.crt
+            - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/citizen.lran.com/users/Admin@citizen.lran.com/msp
+        working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+        command: /bin/bash
+        volumes:
+            - /var/run/:/host/var/run/
+            - ./../chaincode/:/opt/gopath/src/
+            - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+            - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+            - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+        depends_on:
+            - orderer.lran.com
+            - peer0.citizen.lran.com
+            - peer0.lawyer.lran.com
+            - peer0.registryoffice.lran.com
+            - peer0.blro.lran.com
+            - caCitizen
+            - caLawyer
+            - caRegistryOffice
+            - caBLRO
+        networks:
+            - lrannet

@@ -1,0 +1,179 @@
+---
+Organizations:
+    - &OrdererOrg
+      Name: OrdererOrg
+      ID: OrdererMSP
+      MSPDir: crypto-config/ordererOrganizations/lran/msp
+      Policies:
+          Readers:
+              Type: Signature
+              Rule: "OR('OrdererMSP.member')"
+          Writers:
+              Type: Signature
+              Rule: "OR('OrdererMSP.member')"
+          Admins:
+              Type: Signature
+              Rule: "OR('OrdererMSP.admin')"
+
+    - &Citizen
+      Name: CitizenMSP
+      ID: CitizenMSP
+      MSPDir: crypto-config/peerOrganizations/citizen.lran/msp
+      Policies:
+          Readers:
+              Type: Signature
+              Rule: "OR('CitizenMSP.admin', 'CitizenMSP.peer', 'CitizenMSP.client')"
+          Writers:
+              Type: Signature
+              Rule: "OR('CitizenMSP.admin', 'CitizenMSP.client')"
+          Admins:
+              Type: Signature
+              Rule: "OR('CitizenMSP.admin')"
+
+    - &Lawyer
+      Name: LawyerMSP
+      ID: LawyerMSP
+      MSPDir: crypto-config/peerOrganizations/lawyer.lran/msp
+      Policies:
+          Readers:
+              Type: Signature
+              Rule: "OR('LawyerMSP.admin', 'LawyerMSP.peer', 'LawyerMSP.client')"
+          Writers:
+              Type: Signature
+              Rule: "OR('LawyerMSP.admin', 'LawyerMSP.client')"
+          Admins:
+              Type: Signature
+              Rule: "OR('LawyerMSP.admin')"
+
+    - &RegistryOffice
+      Name: RegistryOfficeMSP
+      ID: RegistryOfficeMSP
+      MSPDir: crypto-config/peerOrganizations/registryoffice.lran/msp
+      Policies:
+          Readers:
+              Type: Signature
+              Rule: "OR('RegistryOfficeMSP.admin', 'RegistryOfficeMSP.peer', 'RegistryOfficeMSP.client')"
+          Writers:
+              Type: Signature
+              Rule: "OR('RegistryOfficeMSP.admin', 'RegistryOfficeMSP.client')"
+          Admins:
+              Type: Signature
+              Rule: "OR('RegistryOfficeMSP.admin')"
+
+    - &BLRO
+      Name: BLROMSP
+      ID: BLROMSP
+      MSPDir: crypto-config/peerOrganizations/blro.lran/msp
+      Policies:
+          Readers:
+              Type: Signature
+              Rule: "OR('BLROMSP.admin', 'BLROMSP.peer', 'BLROMSP.client')"
+          Writers:
+              Type: Signature
+              Rule: "OR('BLROMSP.admin', 'BLROMSP.client')"
+          Admins:
+              Type: Signature
+              Rule: "OR('BLROMSP.admin')"
+
+Capabilities:
+    Channel: &ChannelCapabilities
+        V1_4_3: true
+        V1_3: false
+        V1_1: false
+    Orderer: &OrdererCapabilities
+        V1_4_2: true
+        V1_1: false
+    Application: &ApplicationCapabilities
+        V1_4_2: true
+        V1_3: false
+        V1_2: false
+        V1_1: false
+
+Application: &ApplicationDefaults
+    Organizations:
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+
+    Capabilities:
+        <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+    OrdererType: solo
+    Addresses:
+        - orderer.lran:7050
+    BatchTimeout: 2s
+    BatchSize:
+        MaxMessageCount: 10
+        AbsoluteMaxBytes: 99 MB
+        PreferredMaxBytes: 512 KB
+
+    Kafka:
+        Brokers:
+            - 127.0.0.1:9092
+
+    Organizations:
+
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        BlockValidation:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+
+Channel: &ChannelDefaults
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+    Capabilities:
+        <<: *ChannelCapabilities
+
+Profiles:
+    LRANOrdererGenesis:
+        <<: *ChannelDefaults
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                - *OrdererOrg
+            Capabilities:
+                <<: *OrdererCapabilities
+        Consortiums:
+            SampleConsortium:
+                Organizations:
+                    - *Citizen
+                    - *Lawyer
+                    - *RegistryOffice
+                    - *BLRO
+    LRANChannel:
+        Consortium: SampleConsortium
+        <<: *ChannelDefaults
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *Citizen
+                - *Lawyer
+                - *RegistryOffice
+                - *BLRO
+            Capabilities:
+                <<: *ApplicationCapabilities

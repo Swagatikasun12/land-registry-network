@@ -1,0 +1,39 @@
+OrdererOrgs:
+    - Name: Orderer
+      Domain: lran.com
+      EnableNodeOUs: true
+      Specs:
+          - Hostname: orderer
+
+PeerOrgs:
+    - Name: Citizen
+      Domain: citizen.lran.com
+      EnableNodeOUs: true
+      Template:
+          Count: 1
+      Users:
+          Count: 1
+
+    - Name: Lawyer
+      Domain: lawyer.lran.com
+      EnableNodeOUs: true
+      Template:
+          Count: 1
+      Users:
+          Count: 1
+
+    - Name: RegistryOffice
+      Domain: registryoffice.lran.com
+      EnableNodeOUs: true
+      Template:
+          Count: 1
+      Users:
+          Count: 1
+
+    - Name: BLRO
+      Domain: blro.lran.com
+      EnableNodeOUs: true
+      Template:
+          Count: 1
+      Users:
+          Count: 1

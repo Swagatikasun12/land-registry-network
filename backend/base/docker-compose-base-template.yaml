@@ -1,0 +1,179 @@
+version: "2"
+
+services:
+    orderer.lran.com:
+        container_name: orderer.lran.com
+        extends:
+            file: peer-base.yaml
+            service: orderer-base
+        volumes:
+            - ../channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+            - ../crypto-config/ordererOrganizations/lran.com/orderers/orderer.lran.com/msp:/var/hyperledger/orderer/msp
+            - ../crypto-config/ordererOrganizations/lran.com/orderers/orderer.lran.com/tls/:/var/hyperledger/orderer/tls
+            - orderer.lran.com:/var/hyperledger/production/orderer
+        ports:
+            - 7050:7050
+
+    peer0.citizen.lran.com:
+        container_name: peer0.citizen.lran.com
+        extends:
+            file: peer-base.yaml
+            service: peer-base
+        environment:
+            - CORE_PEER_ID=peer0.citizen.lran.com
+            - CORE_PEER_ADDRESS=peer0.citizen.lran.com:7051
+            - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+            - CORE_PEER_CHAINCODEADDRESS=peer0.citizen.lran.com:7052
+            - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+            #- CORE_PEER_GOSSIP_BOOTSTRAP=peer0.lawyer.lran.com:8051
+            - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.citizen.lran.com:7051
+            - CORE_PEER_LOCALMSPID=CitizenMSP
+            - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer0.citizen.lran.com:5984
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+        volumes:
+            - /var/run/:/host/var/run/
+            - ../crypto-config/peerOrganizations/citizen.lran.com/peers/peer0.citizen.lran.com/msp:/etc/hyperledger/fabric/msp
+            - ../crypto-config/peerOrganizations/citizen.lran.com/peers/peer0.citizen.lran.com/tls:/etc/hyperledger/fabric/tls
+            - peer0.citizen.lran.com:/var/hyperledger/production
+        ports:
+            - 7051:7051
+
+    peer0.lawyer.lran.com:
+        container_name: peer0.lawyer.lran.com
+        extends:
+            file: peer-base.yaml
+            service: peer-base
+        environment:
+            - CORE_PEER_ID=peer0.lawyer.lran.com
+            - CORE_PEER_ADDRESS=peer0.lawyer.lran.com:8051
+            - CORE_PEER_LISTENADDRESS=0.0.0.0:8051
+            - CORE_PEER_CHAINCODEADDRESS=peer0.lawyer.lran.com:8052
+            - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:8052
+            - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.lawyer.lran.com:8051
+            #- CORE_PEER_GOSSIP_BOOTSTRAP=peer0.citizen.lran.com:7051
+            - CORE_PEER_LOCALMSPID=LawyerMSP
+            - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer0.lawyer.lran.com:5984
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+        volumes:
+            - /var/run/:/host/var/run/
+            - ../crypto-config/peerOrganizations/lawyer.lran.com/peers/peer0.lawyer.lran.com/msp:/etc/hyperledger/fabric/msp
+            - ../crypto-config/peerOrganizations/lawyer.lran.com/peers/peer0.lawyer.lran.com/tls:/etc/hyperledger/fabric/tls
+            - peer0.lawyer.lran.com:/var/hyperledger/production
+        ports:
+            - 8051:8051
+
+    peer0.registryoffice.lran.com:
+        container_name: peer0.registryoffice.lran.com
+        extends:
+            file: peer-base.yaml
+            service: peer-base
+        environment:
+            - CORE_PEER_ID=peer0.registryoffice.lran.com
+            - CORE_PEER_ADDRESS=peer0.registryoffice.lran.com:9051
+            - CORE_PEER_LISTENADDRESS=0.0.0.0:9051
+            - CORE_PEER_CHAINCODEADDRESS=peer0.registryoffice.lran.com:9052
+            - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
+            - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.registryoffice.lran.com:9051
+            #- CORE_PEER_GOSSIP_BOOTSTRAP=peer0.citizen.lran.com:7051
+            - CORE_PEER_LOCALMSPID=RegistryOfficeMSP
+            - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer0.registryoffice.lran.com:5984
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+        volumes:
+            - /var/run/:/host/var/run/
+            - ../crypto-config/peerOrganizations/registryoffice.lran.com/peers/peer0.registryoffice.lran.com/msp:/etc/hyperledger/fabric/msp
+            - ../crypto-config/peerOrganizations/registryoffice.lran.com/peers/peer0.registryoffice.lran.com/tls:/etc/hyperledger/fabric/tls
+            - peer0.registryoffice.lran.com:/var/hyperledger/production
+        ports:
+            - 9051:9051
+
+    peer0.blro.lran.com:
+        container_name: peer0.blro.lran.com
+        extends:
+            file: peer-base.yaml
+            service: peer-base
+        environment:
+            - CORE_PEER_ID=peer0.blro.lran.com
+            - CORE_PEER_ADDRESS=peer0.blro.lran.com:10051
+            - CORE_PEER_LISTENADDRESS=0.0.0.0:10051
+            - CORE_PEER_CHAINCODEADDRESS=peer0.blro.lran.com:10052
+            - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:10052
+            - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.blro.lran.com:10051
+            #- CORE_PEER_GOSSIP_BOOTSTRAP=peer0.citizen.lran.com:7051
+            - CORE_PEER_LOCALMSPID=BLROMSP
+            - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer0.blro.lran.com:5984
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+            - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+        volumes:
+            - /var/run/:/host/var/run/
+            - ../crypto-config/peerOrganizations/blro.lran.com/peers/peer0.blro.lran.com/msp:/etc/hyperledger/fabric/msp
+            - ../crypto-config/peerOrganizations/blro.lran.com/peers/peer0.blro.lran.com/tls:/etc/hyperledger/fabric/tls
+            - peer0.blro.lran.com:/var/hyperledger/production
+        ports:
+            - 10051:10051
+
+    caCitizen:
+        image: hyperledger/fabric-ca:$IMAGE_TAG
+        environment:
+            - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+            - FABRIC_CA_SERVER_CA_NAME=ca-citizen
+            - FABRIC_CA_SERVER_TLS_ENABLED=true
+            - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.citizen.lran.com-cert.pem
+            - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/CA1_PRIVATE_KEY
+            - FABRIC_CA_SERVER_PORT=7054
+        ports:
+            - "7054:7054"
+        command: sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.citizen.lran.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA1_PRIVATE_KEY -b admin:adminpw -d'
+        volumes:
+            - ../crypto-config/peerOrganizations/citizen.lran.com/ca/:/etc/hyperledger/fabric-ca-server-config
+
+    caLawyer:
+        image: hyperledger/fabric-ca:$IMAGE_TAG
+        environment:
+            - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+            - FABRIC_CA_SERVER_CA_NAME=ca-lawyer
+            - FABRIC_CA_SERVER_TLS_ENABLED=true
+            - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.lawyer.lran.com-cert.pem
+            - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/CA2_PRIVATE_KEY
+            - FABRIC_CA_SERVER_PORT=8054
+        ports:
+            - "8054:8054"
+        command: sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.lawyer.lran.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA2_PRIVATE_KEY -b admin:adminpw -d'
+        volumes:
+            - ../crypto-config/peerOrganizations/lawyer.lran.com/ca/:/etc/hyperledger/fabric-ca-server-config
+
+    caRegistryOffice:
+        image: hyperledger/fabric-ca:$IMAGE_TAG
+        environment:
+            - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+            - FABRIC_CA_SERVER_CA_NAME=ca-registryoffice
+            - FABRIC_CA_SERVER_TLS_ENABLED=true
+            - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.registryoffice.lran.com-cert.pem
+            - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/CA3_PRIVATE_KEY
+            - FABRIC_CA_SERVER_PORT=9054
+        ports:
+            - "9054:9054"
+        command: sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.registryoffice.lran.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA3_PRIVATE_KEY -b admin:adminpw -d'
+        volumes:
+            - ../crypto-config/peerOrganizations/registryoffice.lran.com/ca/:/etc/hyperledger/fabric-ca-server-config
+
+    caBLRO:
+        image: hyperledger/fabric-ca:$IMAGE_TAG
+        environment:
+            - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+            - FABRIC_CA_SERVER_CA_NAME=ca-blro
+            - FABRIC_CA_SERVER_TLS_ENABLED=true
+            - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.blro.lran.com-cert.pem
+            - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/CA4_PRIVATE_KEY
+            - FABRIC_CA_SERVER_PORT=10054
+        ports:
+            - "10054:10054"
+        command: sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.blro.lran.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA4_PRIVATE_KEY -b admin:adminpw -d'
+        volumes:
+            - ../crypto-config/peerOrganizations/blro.lran.com/ca/:/etc/hyperledger/fabric-ca-server-config
