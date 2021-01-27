@@ -108,7 +108,7 @@ Application: &ApplicationDefaults
 Orderer: &OrdererDefaults
     OrdererType: solo
     Addresses:
-        - orderer.lran:7050
+        - orderer.lran.com:7050
     BatchTimeout: 2s
     BatchSize:
         MaxMessageCount: 10
