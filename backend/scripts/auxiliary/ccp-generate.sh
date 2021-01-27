@@ -16,13 +16,12 @@ function json_ccp {
         ../../connections/ccp-template.json 
 }
 
-
 ORG=citizen
 ORGMSP=Citizen
 P0PORT=7051
 CAPORT=7054
-PEERPEM=../crypto-config/peerOrganizations/citizen.vehicle.com/tlsca/tlsca.citizen.vehicle.com-cert.pem
-CAPEM=../crypto-config/peerOrganizations/citizen.vehicle.com/ca/ca.citizen.vehicle.com-cert.pem
+PEERPEM=../crypto-config/peerOrganizations/citizen.lran.com/tlsca/tlsca.citizen.lran.com-cert.pem
+CAPEM=../crypto-config/peerOrganizations/citizen.lran.com/ca/ca.citizen.lran.com-cert.pem
 
 echo "$(json_ccp $ORG $ORGMSP $P0PORT $CAPORT $PEERPEM $CAPEM)" >../../connections/connection-citizen.json
 
@@ -30,16 +29,16 @@ ORG=lawyer
 ORGMSP=Lawyer
 P0PORT=8051
 CAPORT=8054
-PEERPEM=../crypto-config/peerOrganizations/lawyer.vehicle.com/tlsca/tlsca.lawyer.vehicle.com-cert.pem
-CAPEM=../crypto-config/peerOrganizations/lawyer.vehicle.com/ca/ca.lawyer.vehicle.com-cert.pem
+PEERPEM=../crypto-config/peerOrganizations/lawyer.lran.com/tlsca/tlsca.lawyer.lran.com-cert.pem
+CAPEM=../crypto-config/peerOrganizations/lawyer.lran.com/ca/ca.lawyer.lran.com-cert.pem
 
 echo "$(json_ccp $ORG $ORGMSP $P0PORT $CAPORT $PEERPEM $CAPEM)" >../../connections/connection-lawyer.json
 ORG=registryoffice
 ORGMSP=RegistryOffice
 P0PORT=9051
 CAPORT=9054
-PEERPEM=../crypto-config/peerOrganizations/registryoffice.vehicle.com/tlsca/tlsca.registryoffice.vehicle.com-cert.pem
-CAPEM=../crypto-config/peerOrganizations/registryoffice.vehicle.com/ca/ca.registryoffice.vehicle.com-cert.pem
+PEERPEM=../crypto-config/peerOrganizations/registryoffice.lran.com/tlsca/tlsca.registryoffice.lran.com-cert.pem
+CAPEM=../crypto-config/peerOrganizations/registryoffice.lran.com/ca/ca.registryoffice.lran.com-cert.pem
 
 echo "$(json_ccp $ORG $ORGMSP $P0PORT $CAPORT $PEERPEM $CAPEM)" >../../connections/connection-registryoffice.json
 
@@ -47,7 +46,7 @@ ORG=blro
 ORGMSP=BLRO
 P0PORT=10051
 CAPORT=10054
-PEERPEM=../crypto-config/peerOrganizations/blro.vehicle.com/tlsca/tlsca.blro.vehicle.com-cert.pem
-CAPEM=../crypto-config/peerOrganizations/blro.vehicle.com/ca/ca.blro.vehicle.com-cert.pem
+PEERPEM=../crypto-config/peerOrganizations/blro.lran.com/tlsca/tlsca.blro.lran.com-cert.pem
+CAPEM=../crypto-config/peerOrganizations/blro.lran.com/ca/ca.blro.lran.com-cert.pem
 
 echo "$(json_ccp $ORG $ORGMSP $P0PORT $CAPORT $PEERPEM $CAPEM)" >../../connections/connection-blro.json
