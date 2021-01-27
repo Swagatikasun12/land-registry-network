@@ -3,7 +3,7 @@ Organizations:
     - &OrdererOrg
       Name: OrdererOrg
       ID: OrdererMSP
-      MSPDir: crypto-config/ordererOrganizations/lran/msp
+      MSPDir: crypto-config/ordererOrganizations/lran.com/msp
       Policies:
           Readers:
               Type: Signature
@@ -18,7 +18,7 @@ Organizations:
     - &Citizen
       Name: CitizenMSP
       ID: CitizenMSP
-      MSPDir: crypto-config/peerOrganizations/citizen.lran/msp
+      MSPDir: crypto-config/peerOrganizations/citizen.lran.com/msp
       Policies:
           Readers:
               Type: Signature
@@ -33,7 +33,7 @@ Organizations:
     - &Lawyer
       Name: LawyerMSP
       ID: LawyerMSP
-      MSPDir: crypto-config/peerOrganizations/lawyer.lran/msp
+      MSPDir: crypto-config/peerOrganizations/lawyer.lran.com/msp
       Policies:
           Readers:
               Type: Signature
@@ -48,7 +48,7 @@ Organizations:
     - &RegistryOffice
       Name: RegistryOfficeMSP
       ID: RegistryOfficeMSP
-      MSPDir: crypto-config/peerOrganizations/registryoffice.lran/msp
+      MSPDir: crypto-config/peerOrganizations/registryoffice.lran.com/msp
       Policies:
           Readers:
               Type: Signature
@@ -63,7 +63,7 @@ Organizations:
     - &BLRO
       Name: BLROMSP
       ID: BLROMSP
-      MSPDir: crypto-config/peerOrganizations/blro.lran/msp
+      MSPDir: crypto-config/peerOrganizations/blro.lran.com/msp
       Policies:
           Readers:
               Type: Signature
