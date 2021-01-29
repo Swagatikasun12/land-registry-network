@@ -1,10 +1,11 @@
 package main
 
 import (
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
-
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric/core/chaincode/shim/ext/cid"
 	sc "github.com/hyperledger/fabric/protos/peer"
 )
 
@@ -12,11 +13,13 @@ import (
 type Chaincode struct {
 }
 
-// Definition of the Asset structure
-type asset struct {
-	ID    string `json:"objID"`
-	Name  string `json:"objName"`
-	Owner string `json:"objOwner"`
+// Definition of the BLRO structure
+type blro struct {
+	ID             string   `json:"ID"`
+	Name           string   `json:"Name"`
+	Description    string   `json:"Description"`
+	CompletedCases []string `json:"CompletedCases"`
+	ActiveCases    []string `json:"ActiveCases"`
 }
 
 // Init is called when the chaincode is instantiated by the blockchain network.
@@ -29,55 +32,63 @@ func (cc *Chaincode) Invoke(stub shim.ChaincodeStubInterface) sc.Response {
 	fcn, params := stub.GetFunctionAndParameters()
 	fmt.Println("Invoke()", fcn, params)
 
-	if fcn == "createAsset" {
-		return cc.createAsset(stub, params)
-	} else if fcn == "readAsset" {
-		return cc.readAsset(stub, params)
-	} else if fcn == "updateAsset" {
-		return cc.updateAsset(stub, params)
-	} else if fcn == "deleteAsset" {
-		return cc.deleteAsset(stub, params)
+	if fcn == "createBLRO" {
+		return cc.createBLRO(stub, params)
+	} else if fcn == "readBLRO" {
+		return cc.readBLRO(stub, params)
+	} else if fcn == "addCase" {
+		return cc.addCase(stub, params)
+	} else if fcn == "completeCase" {
+		return cc.completeCase(stub, params)
 	} else {
 		fmt.Println("Invoke() did not find func: " + fcn)
 		return shim.Error("Received unknown function invocation!")
 	}
 }
 
-// Function to create new asset (C of CRUD)
-func (cc *Chaincode) createAsset(stub shim.ChaincodeStubInterface, params []string) sc.Response {
+// Function to create new blro (C of CRUD)
+func (cc *Chaincode) createBLRO(stub shim.ChaincodeStubInterface, params []string) sc.Response {
+	creatorOrg, creatorCertIssuer, _, err := getTxCreatorInfo(stub)
+	if !authenticateBLRO(creatorOrg, creatorCertIssuer) {
+		return shim.Error("{\"Error\":\"Access Denied!\",\"Payload\":{\"MSP\":\"" + creatorOrg + "\",\"CA\":\"" + creatorCertIssuer + "\"}}")
+	}
+
 	// Check if sufficient Params passed
 	if len(params) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
 
 	// Check if Params are non-empty
-	if len(params[0]) <= 0 {
-		return shim.Error("1st argument must be a non-empty string")
-	}
-	if len(params[1]) <= 0 {
-		return shim.Error("2nd argument must be a non-empty string")
-	}
-	if len(params[2]) <= 0 {
-		return shim.Error("3rd argument must be a non-empty string")
+	for a := 0; a < 3; a++ {
+		if len(params[a]) <= 0 {
+			return shim.Error("Arguments must be a non-empty string")
+		}
 	}
 
-	// Check if Asset exists with Key => params[0]
-	assetAsBytes, err := stub.GetState(params[0])
+	key := "blro-" + params[0]
+	ID := params[0]
+	Name := params[1]
+	Description := params[2]
+	var CompletedCases []string
+	var ActiveCases []string
+
+	// Check if BLRO exists with Key => key
+	blroAsBytes, err := stub.GetState(key)
 	if err != nil {
-		return shim.Error("Failed to check if Asset exists!")
-	} else if assetAsBytes != nil {
-		return shim.Error("Asset Already Exists!")
+		return shim.Error("Failed to check if BLRO exists!")
+	} else if blroAsBytes != nil {
+		return shim.Error("BLRO Already Exists!")
 	}
 
-	// Generate Asset from params provided
-	asset := &asset{params[0], params[1], params[2]}
-	assetJSONasBytes, err := json.Marshal(asset)
+	// Generate BLRO from params provided
+	blro := &blro{ID, Name, Description, CompletedCases, ActiveCases}
+	blroJSONasBytes, err := json.Marshal(blro)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	// Put State of newly generated Asset with Key => params[0]
-	err = stub.PutState(params[0], assetJSONasBytes)
+	// Put State of newly generated BLRO with Key => key
+	err = stub.PutState(key, blroJSONasBytes)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -86,8 +97,8 @@ func (cc *Chaincode) createAsset(stub shim.ChaincodeStubInterface, params []stri
 	return shim.Success(nil)
 }
 
-// Function to read an asset (R of CRUD)
-func (cc *Chaincode) readAsset(stub shim.ChaincodeStubInterface, params []string) sc.Response {
+// Function to read an blro (R of CRUD)
+func (cc *Chaincode) readBLRO(stub shim.ChaincodeStubInterface, params []string) sc.Response {
 	// Check if sufficient Params passed
 	if len(params) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 2")
@@ -98,63 +109,72 @@ func (cc *Chaincode) readAsset(stub shim.ChaincodeStubInterface, params []string
 		return shim.Error("1st argument must be a non-empty string")
 	}
 
-	// Get State of Asset with Key => params[0]
-	assetAsBytes, err := stub.GetState(params[0])
+	key := "blro-" + params[0]
+
+	// Get State of BLRO with Key => key
+	blroAsBytes, err := stub.GetState(key)
 	if err != nil {
 		jsonResp := "{\"Error\":\"Failed to get state for " + params[0] + "\"}"
 		return shim.Error(jsonResp)
-	} else if assetAsBytes == nil {
-		jsonResp := "{\"Error\":\"Asset does not exist!\"}"
+	} else if blroAsBytes == nil {
+		jsonResp := "{\"Error\":\"BLRO does not exist!\"}"
 		return shim.Error(jsonResp)
 	}
 
 	// Returned on successful execution of the function
-	return shim.Success(assetAsBytes)
+	return shim.Success(blroAsBytes)
 }
 
-// Function to update an asset's owner (U of CRUD)
-func (cc *Chaincode) updateAsset(stub shim.ChaincodeStubInterface, params []string) sc.Response {
+// Function to add new active case (U of CRUD)
+func (cc *Chaincode) addCase(stub shim.ChaincodeStubInterface, params []string) sc.Response {
+	creatorOrg, creatorCertIssuer, _, err := getTxCreatorInfo(stub)
+	if !authenticateRegistryOffice(creatorOrg, creatorCertIssuer) {
+		return shim.Error("{\"Error\":\"Access Denied!\",\"Payload\":{\"MSP\":\"" + creatorOrg + "\",\"CA\":\"" + creatorCertIssuer + "\"}}")
+	}
+
 	// Check if sufficient Params passed
 	if len(params) != 2 {
 		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
 
 	// Check if Params are non-empty
-	if len(params[0]) <= 0 {
-		return shim.Error("1st argument must be a non-empty string")
-	}
-	if len(params[1]) <= 0 {
-		return shim.Error("2nd argument must be a non-empty string")
+	for a := 0; a < 2; a++ {
+		if len(params[a]) <= 0 {
+			return shim.Error("Arguments must be a non-empty string")
+		}
 	}
 
-	// Get State of Asset with Key => params[0]
-	assetAsBytes, err := stub.GetState(params[0])
+	key := "blro-" + params[0]
+	CaseID := params[1]
+
+	// Get State of BLRO with Key => key
+	blroAsBytes, err := stub.GetState(key)
 	if err != nil {
 		jsonResp := "{\"Error\":\"Failed to get state for " + params[0] + "\"}"
 		return shim.Error(jsonResp)
-	} else if assetAsBytes == nil {
-		jsonResp := "{\"Error\":\"Asset does not exist!\"}"
+	} else if blroAsBytes == nil {
+		jsonResp := "{\"Error\":\"BLRO does not exist!\"}"
 		return shim.Error(jsonResp)
 	}
 
-	// Create new Asset Variable
-	assetToTransfer := asset{}
-	err = json.Unmarshal(assetAsBytes, &assetToTransfer) //unmarshal it aka JSON.parse()
+	// Create new BLRO Variable
+	blroToUpdate := blro{}
+	err = json.Unmarshal(blroAsBytes, &blroToUpdate) //unmarshal it aka JSON.parse()
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	// Update asset.Owner => params[1]
-	assetToTransfer.Owner = params[1]
+	// Update blro.Owner => params[1]
+	blroToUpdate.ActiveCases = append(blroToUpdate.ActiveCases, CaseID)
 
 	// Convert to Byte[]
-	assetJSONasBytes, err := json.Marshal(assetToTransfer)
+	blroJSONasBytes, err := json.Marshal(blroToUpdate)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	// Put updated State of the Asset with Key => params[0]
-	err = stub.PutState(params[0], assetJSONasBytes)
+	// Put updated State of the BLRO with Key => key
+	err = stub.PutState(key, blroJSONasBytes)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -163,24 +183,105 @@ func (cc *Chaincode) updateAsset(stub shim.ChaincodeStubInterface, params []stri
 	return shim.Success(nil)
 }
 
-// Function to Delete an asset (D of CRUD)
-func (cc *Chaincode) deleteAsset(stub shim.ChaincodeStubInterface, params []string) sc.Response {
+// Function to complete a case, add to CompletedCases, remove from ActiveCases (U of CRUD)
+func (cc *Chaincode) completeCase(stub shim.ChaincodeStubInterface, params []string) sc.Response {
+	creatorOrg, creatorCertIssuer, _, err := getTxCreatorInfo(stub)
+	if !authenticateBLRO(creatorOrg, creatorCertIssuer) {
+		return shim.Error("{\"Error\":\"Access Denied!\",\"Payload\":{\"MSP\":\"" + creatorOrg + "\",\"CA\":\"" + creatorCertIssuer + "\"}}")
+	}
+
 	// Check if sufficient Params passed
-	if len(params) != 1 {
+	if len(params) != 2 {
 		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
 
 	// Check if Params are non-empty
-	if len(params[0]) <= 0 {
-		return shim.Error("1st argument must be a non-empty string")
+	for a := 0; a < 2; a++ {
+		if len(params[a]) <= 0 {
+			return shim.Error("Arguments must be a non-empty string")
+		}
 	}
 
-	// Delete the State with Key => params[0]
-	err := stub.DelState(params[0])
+	key := "blro-" + params[0]
+	CaseID := params[1]
+
+	// Get State of BLRO with Key => key
+	blroAsBytes, err := stub.GetState(key)
 	if err != nil {
-		return shim.Error("Failed to delete Asset: " + err.Error())
+		jsonResp := "{\"Error\":\"Failed to get state for " + params[0] + "\"}"
+		return shim.Error(jsonResp)
+	} else if blroAsBytes == nil {
+		jsonResp := "{\"Error\":\"BLRO does not exist!\"}"
+		return shim.Error(jsonResp)
+	}
+
+	// Create new BLRO Variable
+	blroToUpdate := blro{}
+	err = json.Unmarshal(blroAsBytes, &blroToUpdate) //unmarshal it aka JSON.parse()
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	// Remove from ActiveCases
+	for i, v := range blroToUpdate.ActiveCases {
+		if v == CaseID {
+			blroToUpdate.ActiveCases = append(blroToUpdate.ActiveCases[:i], blroToUpdate.ActiveCases[i+1:]...)
+		}
+	}
+
+	// Append to CompletedCases
+	blroToUpdate.CompletedCases = append(blroToUpdate.CompletedCases, CaseID)
+
+	// Convert to Byte[]
+	blroJSONasBytes, err := json.Marshal(blroToUpdate)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	// Put updated State of the BLRO with Key => key
+	err = stub.PutState(key, blroJSONasBytes)
+	if err != nil {
+		return shim.Error(err.Error())
 	}
 
 	// Returned on successful execution of the function
 	return shim.Success(nil)
+}
+
+// ---------------------------------------------
+// Helper Functions
+// ---------------------------------------------
+
+// Authentication
+// ++++++++++++++
+
+// Get Tx Creator Info
+func getTxCreatorInfo(stub shim.ChaincodeStubInterface) (string, string, string, error) {
+	var mspid string
+	var err error
+	var cert *x509.Certificate
+	mspid, err = cid.GetMSPID(stub)
+
+	if err != nil {
+		fmt.Printf("Error getting MSP identity: %sn", err.Error())
+		return "", "", "", err
+	}
+
+	cert, err = cid.GetX509Certificate(stub)
+	if err != nil {
+		fmt.Printf("Error getting client certificate: %sn", err.Error())
+		return "", "", "", err
+	}
+
+	return mspid, cert.Issuer.CommonName, cert.Subject.CommonName, nil
+}
+
+// Authenticate => BLRO
+func authenticateBLRO(mspID string, certCN string) bool {
+	return (mspID == "BLROMSP") && (certCN == "ca.blro.lran.com")
+}
+
+// Authenticate => RegistryOffice
+func authenticateRegistryOffice(mspID string, certCN string) bool {
+	return (mspID == "RegistryOfficeMSP") && (certCN == "ca.registryoffice.lran.com")
 }
