@@ -49,7 +49,7 @@ func (cc *Chaincode) Invoke(stub shim.ChaincodeStubInterface) sc.Response {
 // Function to create new registryofficer (C of CRUD)
 func (cc *Chaincode) createRegistryOfficer(stub shim.ChaincodeStubInterface, params []string) sc.Response {
 	creatorOrg, creatorCertIssuer, _, err := getTxCreatorInfo(stub)
-	if !authenticateRegistryOfficer(creatorOrg, creatorCertIssuer) {
+	if !authenticateRegistryOffice(creatorOrg, creatorCertIssuer) {
 		return shim.Error("{\"Error\":\"Access Denied!\",\"Payload\":{\"MSP\":\"" + creatorOrg + "\",\"CA\":\"" + creatorCertIssuer + "\"}}")
 	}
 
