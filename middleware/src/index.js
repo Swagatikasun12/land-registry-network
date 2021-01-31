@@ -16,5 +16,6 @@ app.use(require("./routes/land_cc"));
 app.use(require("./routes/blro_cc"));
 app.use(require("./routes/registryoffice_cc"));
 app.use(require("./routes/lawyer_cc"));
+app.use(require("./routes/transfer_cc"));
 
 app.listen(3000, console.log);
