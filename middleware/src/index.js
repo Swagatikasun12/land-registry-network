@@ -13,5 +13,8 @@ app.use(function (req, res, next) {
 
 app.use(require("./routes/auth"));
 app.use(require("./routes/land_cc"));
+app.use(require("./routes/blro_cc"));
+app.use(require("./routes/registryoffice_cc"));
+app.use(require("./routes/lawyer_cc"));
 
 app.listen(3000, console.log);
