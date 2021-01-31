@@ -9,7 +9,7 @@ docker exec -it cli bash ./scripts/channel/join-peer.sh peer0 lawyer LawyerMSP 8
 docker exec -it cli bash ./scripts/channel/join-peer.sh peer0 registryoffice RegistryOfficeMSP 9051 1.0
 docker exec -it cli bash ./scripts/channel/join-peer.sh peer0 blro BLROMSP 10051 1.0
 
-CC_NAMES="lawyer_cc registryoffice_cc blro_cc land_cc"
+CC_NAMES="lawyer_cc registryoffice_cc blro_cc land_cc transfer_cc"
 
 for CC in $CC_NAMES; do
     echo "Installing "$CC
