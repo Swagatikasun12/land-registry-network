@@ -22,7 +22,14 @@ txhandler = async (user, payload) => {
     const contract = network.getContract("transfer_cc");
 
     // Evaluate the specified transaction.
-    await contract.submitTransaction("createTransferRequest", payload.ID, payload.LandID, payload.Lawyer, payload.Date);
+    await contract.submitTransaction(
+        "createTransferRequest",
+        payload.ID,
+        payload.To,
+        payload.LandID,
+        payload.Lawyer,
+        payload.Date
+    );
 };
 
 module.exports = txhandler;

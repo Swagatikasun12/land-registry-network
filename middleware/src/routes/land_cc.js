@@ -47,17 +47,4 @@ router.post("/api/main/land/createLand", JWTmiddleware, async (req, res) => {
     }
 });
 
-router.post("/api/main/land/transferLand", JWTmiddleware, async (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-
-    try {
-        landData = req.body.payload;
-        await LandCC.TransferLand(req.user, landData);
-        res.status(200).send({ message: `Land has been Successfully Transferd. ID: ${landData.ID}` });
-    } catch (error) {
-        console.log(error);
-        res.status(500).send({ message: `Land NOT transfered! ID: ${landData.ID}` });
-    }
-});
-
 module.exports = router;

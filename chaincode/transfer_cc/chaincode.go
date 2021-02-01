@@ -25,6 +25,7 @@ type statusHistory struct {
 // Definition of the TransferRequest structure
 type transferRequest struct {
 	ID              string          `json:"ID"`
+	To              string          `json:"To"`
 	LandID          string          `json:"LandID"`
 	Lawyer          string          `json:"Lawyer"`
 	RegistryOfficer string          `json:"RegistryOfficer"`
@@ -70,12 +71,12 @@ func (cc *Chaincode) createTransferRequest(stub shim.ChaincodeStubInterface, par
 	}
 
 	// Check if sufficient Params passed
-	if len(params) != 4 {
+	if len(params) != 5 {
 		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
 
 	// Check if Params are non-empty
-	for a := 0; a < 4; a++ {
+	for a := 0; a < 5; a++ {
 		if len(params[a]) <= 0 {
 			return shim.Error("Arguments must be a non-empty string")
 		}
@@ -83,9 +84,10 @@ func (cc *Chaincode) createTransferRequest(stub shim.ChaincodeStubInterface, par
 
 	key := "transferRequest-" + params[0]
 	ID := params[0]
-	LandID := params[1]
-	Lawyer := params[2]
-	Date := params[3]
+	To := params[1]
+	LandID := params[2]
+	Lawyer := params[3]
+	Date := params[4]
 	var StatusHistory []statusHistory
 	Complete := false
 	DateI, err := strconv.Atoi(Date)
@@ -106,7 +108,7 @@ func (cc *Chaincode) createTransferRequest(stub shim.ChaincodeStubInterface, par
 	StatusHistory = append(StatusHistory, status)
 
 	// Generate TransferRequest from params provided
-	transferRequest := &transferRequest{ID, LandID, Lawyer, "", "", stage[0], StatusHistory, Complete}
+	transferRequest := &transferRequest{ID, To, LandID, Lawyer, "", "", stage[0], StatusHistory, Complete}
 	transferRequestJSONasBytes, err := json.Marshal(transferRequest)
 	if err != nil {
 		return shim.Error(err.Error())
@@ -393,6 +395,13 @@ func (cc *Chaincode) approveTransferRequest(stub shim.ChaincodeStubInterface, pa
 	response2 := stub.InvokeChaincode("lawyer_cc", args2, "mainchannel")
 	if response2.Status != shim.OK {
 		return shim.Error(response2.Message)
+	}
+
+	// Transfer Land
+	args3 := util.ToChaincodeArgs("transferLand", transferRequestToUpdate.LandID, transferRequestToUpdate.To, Date, ID)
+	response3 := stub.InvokeChaincode("land_cc", args3, "mainchannel")
+	if response3.Status != shim.OK {
+		return shim.Error(response3.Message)
 	}
 
 	// Returned on successful execution of the function
