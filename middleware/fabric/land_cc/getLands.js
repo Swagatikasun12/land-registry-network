@@ -22,7 +22,7 @@ txhandler = async (user, Owner) => {
     const contract = network.getContract("land_cc");
 
     // Evaluate the specified transaction.
-    const result = await contract.evaluateTransaction("readLand", Owner);
+    const result = await contract.evaluateTransaction("getLands", Owner);
 
     return JSON.parse(result.toString());
 };
