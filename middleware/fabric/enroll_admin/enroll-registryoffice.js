@@ -10,7 +10,7 @@ const ccp = require("../ccp/connection-registryoffice.json");
 async function main() {
     try {
         // Create a new CA client for interacting with the CA.
-        const caInfo = ccp.certificateAuthorities["ca.registryoffice.ian.com"];
+        const caInfo = ccp.certificateAuthorities["ca.registryoffice.lran.com"];
         // console.log(ccp.tlsCACerts);
         // const caTLSCACerts = caInfo.tlsCACerts.pem;
         const ca = new FabricCAServices(caInfo.url, { trustedRoots: [], verify: false }, caInfo.caName);

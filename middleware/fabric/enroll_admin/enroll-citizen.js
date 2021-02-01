@@ -10,7 +10,7 @@ const ccp = require("../ccp/connection-citizen.json");
 async function main() {
     try {
         // Create a new CA client for interacting with the CA.
-        const caInfo = ccp.certificateAuthorities["ca.citizen.ian.com"];
+        const caInfo = ccp.certificateAuthorities["ca.citizen.lran.com"];
         // console.log(ccp.tlsCACerts);
         // const caTLSCACerts = caInfo.tlsCACerts.pem;
         const ca = new FabricCAServices(caInfo.url, { trustedRoots: [], verify: false }, caInfo.caName);
